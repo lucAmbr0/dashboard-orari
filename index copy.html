@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API Orario</title>
+</head>
+
+<body>
+    <h1>Test API Orario</h1>
+    <p>Apri la console per vedere i risultati del fetch.</p>
+
+    <script>
+        // Funzione per ottenere i dati da delle ore
+        function getOrarioGiorno(orario, giorno) {
+            return fetch(`get_orario.php?orario=${orario}&giorno=${giorno}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        return data.data;
+                    } else {
+                        throw new Error(data.message);
+                    }
+                });
+        }
+
+        // funzion eseguita al caricamento della pagina
+        document.addEventListener('DOMContentLoaded', function () {
+            getOrarioGiorno('08h00', 'martedì') // prendi json
+                .then(lezioni => { // creazione oggetti dal json e stampa in console.
+                    lezioni.forEach(lezione => {
+                        console.log('Durata:', lezione.DURATA);
+                        console.log('Classe:', lezione.CLASSE);
+                        console.log('Aula:', lezione.AULA);
+                        console.log('Giorno:', lezione.GIORNO);
+                        console.log('Orario inizio:', lezione.O_INIZIO);
+                        console.log('---');
+                    });
+                })
+                .catch(error => console.error(error));
+        });
+    </script>
+</body>
+
+</html>
