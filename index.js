@@ -133,7 +133,7 @@ function getOrarioGiorno(orario, giorno) {
         });
 }
 
-// funzion eseguita al caricamento della pagina
+// funzione eseguita al caricamento della pagina
 document.addEventListener('DOMContentLoaded', function () {
     getOrarioGiorno('08h00', 'martedì')
         .then(lezioni => {
