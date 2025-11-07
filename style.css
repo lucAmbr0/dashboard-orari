@@ -20,7 +20,7 @@ p {
 }
 
 body {
-    font-family: "Noto Sans";
+    font-family: "Noto Sans", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     background-color: var(--gray-bg-1);
 }
 
@@ -129,6 +129,21 @@ body {
     }
     to {
         transform: translateY(calc(-240px - 20px));
+    }
+}
+
+@keyframes appearUp {
+    from {
+        /* position: absolute; */
+        /* transform: translateY(50%); */
+        scale: 0.85;
+        opacity: 0;
+    }
+    to {
+        /* position: inherit; */
+        transform: translateY(0);
+        scale: 1;
+        opacity: 1;
     }
 }
 

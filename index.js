@@ -58,6 +58,7 @@ class Cell {
 
     appendToUI() {
         const container = document.getElementById("cellsWrapper");
+        this.html.style.animation = "appearUp 0.5s ease forwards";
         container.appendChild(this.html);
         this.displayed = true;
         console.log("APPEND CELL:", this.year + this.section);
