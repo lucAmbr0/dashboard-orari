@@ -5,22 +5,21 @@
 // emoji_people               ==> uscita
 
 // ------------ CELL HTML FORMAT ------------
-{
-    /* <div class="cellContainer">
-            <h2 class="className">1ªF</h2>
-            <div>
-                <div class="row">
-                    <span class="icon material-symbols-outlined">distance</span>
-                    <p class="roomText">Lab. Informatica 2</p>
-                </div>
-                <hr class="grid-hr">
-                <div class="row">
-                    <span class="icon material-symbols-outlined">guardian</span>
-                    <p class="roomText">Lab. Informatica 2</p>
-                </div>
+/* <div class="cellContainer">
+        <h2 class="className">1ªF</h2>
+        <div>
+            <div class="row">
+                <span class="icon material-symbols-outlined">distance</span>
+                <p class="roomText">Lab. Informatica 2</p>
             </div>
-        </div> 
-*/}
+            <hr class="grid-hr">
+            <div class="row">
+                <span class="icon material-symbols-outlined">guardian</span>
+                <p class="roomText">Lab. Informatica 2</p>
+            </div>
+        </div>
+    </div> 
+*/
 
 // This class defines the structure and behavior of a cell in the timetable
 class Cell {
@@ -83,6 +82,8 @@ const cells = [];
 const visibleCells = [];
 const scrollDuration = 500;
 const delayBetween = 3000;
+const orePull = "08h00";
+const giornoPull = "martedì";
 
 async function startScrolling() {
     const container = document.getElementById("cellsWrapper");
@@ -112,9 +113,10 @@ async function startScrolling() {
         container.classList.remove("trigger-scrollUp");
 
         if (offset < cells.length) {
-            await sleep(delayBetween);
+            await sleep(scrollDuration + delayBetween);
             await scrollStep();
         }
+
     }
 
     await scrollStep();
@@ -125,7 +127,7 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function getOrarioGiorno(orario, giorno) {
+async function getOrarioGiorno(orario, giorno) {
     return fetch(`get_orario.php?orario=${orario}&giorno=${giorno}`)
         .then(response => response.json())
         .then(data => {
@@ -138,12 +140,19 @@ function getOrarioGiorno(orario, giorno) {
 }
 
 // Trigger at page load
-document.addEventListener('DOMContentLoaded', function () {
-    // Empty cells for padding at start
-    for (let i = 0; i < 3; i++)
-        cells.push(new Cell(-1));
-    getOrarioGiorno('08h00', 'martedì')
+document.addEventListener('DOMContentLoaded', () => {
+    getAndElaborateLessons();
+});
+
+async function getAndElaborateLessons() {
+    getOrarioGiorno(orePull, giornoPull)
         .then(lezioni => {
+            // Empty cells for padding at start
+            offset = 0;
+            visibleCells.length = 0;
+            document.getElementById("cellsWrapper").innerHTML = "";
+            for (let i = 0; i < 3; i++)
+                cells.push(new Cell(-1));
             lezioni.forEach(lezione => {
                 const anno = lezione.CLASSE.slice(0, 1);
                 const sezione = lezione.CLASSE.slice(1);
@@ -157,7 +166,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             offset = visibleCells.length;
 
-            startScrolling();
+            startScrolling().then(() => getAndElaborateLessons());
         })
         .catch(error => console.error(error));
-});
+}
