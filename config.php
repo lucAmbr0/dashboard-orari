@@ -1,16 +1,9 @@
 <?php
-// Configurazione database
+// Configurazione database, ricodarsi di runnare orario_scuola.sql per creare il database.
 define('DB_HOST', 'localhost');
-define('DB_USERNAME', 'utente'); // utente creato nel database
-define('DB_PASSWORD', 'utente'); // password dell'utente
-define('DB_NAME', 'orario_scuola'); // Database creato con create_database.sql
-
-/* to create users for accessi the database, into the db shell run: 
-CREATE USER 'utente'@'localhost' IDENTIFIED BY 'utente'; -> utente as example
-GRANT ALL PRIVILEGES ON orario_scuola.* TO 'utente'@'localhost';
-FLUSH PRIVILEGES;
-SELECT User, Host FROM mysql.user;
-*/
+define('DB_USERNAME', 'utente');
+define('DB_PASSWORD', 'utente');
+define('DB_NAME', 'orario_scuola');
 
 // Funzione per connessione database
 function getDbConnection() {
