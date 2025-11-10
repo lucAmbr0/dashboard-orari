@@ -1,10 +1,10 @@
-// ------------ GLOSSARIO ICONE ------------
+// ------------ ICONS DICTIONARY ------------
 // distance                   ==> aula corrente
 // transfer_within_a_station  ==> successiva, cambio aula
 // guardian                   ==> successiva, stessa aula
 // emoji_people               ==> uscita
 
-// ------------ HTML UNA CELLA ------------
+// ------------ CELL HTML FORMAT ------------
 {
     /* <div class="cellContainer">
             <h2 class="className">1ªF</h2>
@@ -20,9 +20,9 @@
                 </div>
             </div>
         </div> 
-    */}
-// ------------ HTML UNA CELLA ------------
+*/}
 
+// This class defines the structure and behavior of a cell in the timetable
 class Cell {
     constructor(year, section, currentRoom, nextRoom) {
         this.year = year;
@@ -34,7 +34,10 @@ class Cell {
         this.html.classList.add("cellContainer", `bg-class-${this.year}`);
         this.html.id = `cell-${this.year}${this.section}`;
 
-        this.html.innerHTML = `
+        if (this.year === -1) // Padding cells at start
+            this.html.style.visibility = "hidden";
+        else
+            this.html.innerHTML = `
             <h2 class="className">${this.year}ª${this.section}</h2>
             <div class="infoContainer">
                 <div class="row">
@@ -48,7 +51,7 @@ class Cell {
                     : this.nextRoom == "Uscita"
                         ? "emoji_people"
                         : "transfer_within_a_station"
-                    }</span>
+                }</span>
                     <p class="roomText">${this.nextRoom}</p>
                 </div>
             </div>
@@ -78,11 +81,11 @@ class Cell {
 let offset = 0;
 const cells = [];
 const visibleCells = [];
+const scrollDuration = 500;
+const delayBetween = 3000;
 
 async function startScrolling() {
     const container = document.getElementById("cellsWrapper");
-    const scrollDuration = 500;
-    const delayBetween = 3000;
     const stepSize = 3;
 
     async function scrollStep() {
@@ -134,8 +137,11 @@ function getOrarioGiorno(orario, giorno) {
         });
 }
 
-// funzione eseguita al caricamento della pagina
+// Trigger at page load
 document.addEventListener('DOMContentLoaded', function () {
+    // Empty cells for padding at start
+    for (let i = 0; i < 3; i++)
+        cells.push(new Cell(-1));
     getOrarioGiorno('08h00', 'martedì')
         .then(lezioni => {
             lezioni.forEach(lezione => {
