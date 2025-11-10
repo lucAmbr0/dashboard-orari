@@ -1,38 +1,38 @@
 <?php
 require_once 'config.php';
 
-// Imposta header per JSON
+// Set header for JSON
 header('Content-Type: application/json; charset=utf-8');
 
 try {
-    $pdo = getDbConnection(); // Connessione al database
+    $pdo = getDbConnection(); // Database connection
 
-    // Parametro orario e giorno dalla query string (es: ?orario=08h00&giorno=lunedì)
-    $orario_richiesto = $_GET['orario'] ?? null;
-    $giorno_richiesto = $_GET['giorno'] ?? null;
+    // Parameters "orario" and "giorno" from query string (e.g., ?orario=08h00&giorno=lunedì)
+    $requested_time = $_GET['orario'] ?? null;
+    $requested_day = $_GET['giorno'] ?? null;
 
-    //errore se non orario e giorno != null
-    if (!$orario_richiesto || !$giorno_richiesto) {
+    // Error if "orario" and "giorno" are null
+    if (!$requested_time || !$requested_day) {
         echo json_encode([
             'success' => false,
-            'error' => 'Parametri "orario" e "giorno" richiesti. Esempio: ?orario=08h00&giorno=lunedì',
+            'error' => 'Parameters "orario" and "giorno" are required. Example: ?orario=08h00&giorno=lunedì',
         ]);
         exit();
     }
-    // validità dell'orario (formattazione: 08h00)
-    if (!preg_match('/^\d{2}h\d{2}$/', $orario_richiesto)) {
+    // Validate time format (format: 08h00)
+    if (!preg_match('/^\d{2}h\d{2}$/', $requested_time)) {
         echo json_encode([
             'success' => false,
-            'error' => 'Formato orario non valido. Usa formato es. 08h00',
+            'error' => 'Invalid time format. Use format e.g., 08h00',
         ]);
         exit();
     }
-    //validità del giorno (accettati: lunedì martedì mercoledì giovedì venerdì)
-    $giorni_validi = ['lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì'];
-    if (!in_array($giorno_richiesto, $giorni_validi)) {
+    // Validate day (accepted: lunedì, martedì, mercoledì, giovedì, venerdì)
+    $valid_days = ['lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì'];
+    if (!in_array($requested_day, $valid_days)) {
         echo json_encode([
             'success' => false,
-            'error' => 'Giorno non valido. Giorni accettati: lunedì, martedì, mercoledì, giovedì, venerdì',
+            'error' => 'Invalid day. Accepted days: lunedì, martedì, mercoledì, giovedì, venerdì',
         ]);
         exit();
     }
@@ -45,26 +45,26 @@ try {
     ";
 
     $stmt = $pdo->prepare($query);
-    $orario_param = "%" . $orario_richiesto . "%"; // %% per usare LIKE per flessibilità (presenza di \n negli orari. sono pigro non voglio toglierli)
-    $stmt->bindValue(':orario', $orario_param, PDO::PARAM_STR);
-    $stmt->bindValue(':giorno', $giorno_richiesto, PDO::PARAM_STR);
+    $time_param = "%" . $requested_time . "%"; // %% to use LIKE for flexibility (presence of \n in times. I'm lazy and don't want to remove them)
+    $stmt->bindValue(':orario', $time_param, PDO::PARAM_STR);
+    $stmt->bindValue(':giorno', $requested_day, PDO::PARAM_STR);
     $stmt->execute();
 
     $results = $stmt->fetchAll();
 
-    // Prepara la risposta JSON
+    // Prepare JSON response
     $response = [
         'success' => true,
-        'orario_richiesto' => $orario_richiesto,
-        'giorno_richiesto' => $giorno_richiesto,
+        'requested_time' => $requested_time,
+        'requested_day' => $requested_day,
         'count' => count($results),
         'classi' => $results
     ];
 
-    // messaggio di warning se non ci sono orari
+    // Warning message if no schedules are found
     if (count($results) == 0) {
-        $response['message'] = 'Nessuna lezione trovata per l\'orario ' . $orario_richiesto .
-            ' del giorno ' . $giorno_richiesto;
+        $response['message'] = 'No lessons found for time ' . $requested_time .
+            ' on day ' . $requested_day;
     }
 
     // Output JSON

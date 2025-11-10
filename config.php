@@ -1,11 +1,11 @@
 <?php
-// Configurazione database, ricodarsi di runnare orario_scuola.sql per creare il database.
+// Database configuration, remember to run orario_scuola.sql to create the database.
 define('DB_HOST', 'localhost');
 define('DB_USERNAME', 'utente');
 define('DB_PASSWORD', 'utente');
 define('DB_NAME', 'orario_scuola');
 
-// Funzione per connessione database
+// Function for database connection
 function getDbConnection() {
     try {
         $pdo = new PDO(

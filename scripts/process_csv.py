@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-Script per processare EXP_COURS.csv:
-1. Rimuove le colonne MAT_NOME, DOC_COGN, DOC_NOME
-2. Converte le durate da 2h00 a due righe separate da 1h00 con orari consecutivi
-3. Salva il risultato nella cartella root del progetto.
+Script to process EXP_COURS.csv:
+1. Removes the columns MAT_NOME, DOC_COGN, DOC_NOME
+2. Converts durations from 2h00 to two separate rows of 1h00 with consecutive times
+3. Saves the result in the root folder of the project.
 """
 
 import csv
 import os
 from datetime import datetime, timedelta
 
-# Mappa degli orari scolastici effettivi
-ORARI_SCUOLA = {
+# Map of actual school hours
+SCHOOL_TIMES = {
     "08h00": "08h55",
     "08h55": "10h00", 
     "10h00": "10h55",
@@ -31,72 +31,72 @@ def parse_time(time_str):
 def format_time(dt):
     return f"{dt.hour:02d}h{dt.minute:02d}"
 
-def get_next_hour(orario_inizio):
-    return ORARI_SCUOLA.get(orario_inizio, None)
+def get_next_hour(start_time):
+    return SCHOOL_TIMES.get(start_time, None)
 
 def process_csv():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     input_file = os.path.join(script_dir, 'EXP_COURS.csv')
-    output_file = os.path.join(os.path.dirname(script_dir), 'orario_scuola.csv')
+    output_file = os.path.join(os.path.dirname(script_dir), 'school_schedule.csv')
     
-    print(f"Lettura file: {input_file}")
-    print(f"Scrittura file: {output_file}")
+    print(f"Reading file: {input_file}")
+    print(f"Writing file: {output_file}")
     
     try:
         with open(input_file, 'r', encoding='utf-8') as infile:
-            # Legge il CSV con delimite (sepatatore) ';'
+            # Reads the CSV with delimiter ';'
             reader = csv.DictReader(infile, delimiter=';')
             
-            # Colonne da mantenere
+            # Columns to keep
             output_columns = ['NUMERO', 'DURATA', 'CLASSE', 'AULA', 'GIORNO', 'O.INIZIO']
             
             processed_rows = []
             row_counter = 1
             
-            # formattazione delle ore doppie
+            # Formatting double hours
             for row in reader:
                 durata = row.get('DURATA', '')
                 
                 if durata == '2h00':
-                    orario_inizio_str = row.get('O.INIZIO', '')
-                    orario_seconda_str = get_next_hour(orario_inizio_str)
+                    start_time_str = row.get('O.INIZIO', '')
+                    second_hour_str = get_next_hour(start_time_str)
                     
-                    if orario_seconda_str:
-                        # Prima ora
+                    if second_hour_str:
+                        # First hour
                         first_row = {
                             'NUMERO': row_counter,
                             'DURATA': '1h00',
                             'CLASSE': row.get('CLASSE', ''),
                             'AULA': row.get('AULA', ''),
                             'GIORNO': row.get('GIORNO', ''),
-                            'O.INIZIO': orario_inizio_str
+                            'O.INIZIO': start_time_str
                         }
                         processed_rows.append(first_row)
                         row_counter += 1
                         
-                        # Seconda ora
+                        # Second hour
                         second_row = {
                             'NUMERO': row_counter,
                             'DURATA': '1h00',
                             'CLASSE': row.get('CLASSE', ''),
                             'AULA': row.get('AULA', ''),
                             'GIORNO': row.get('GIORNO', ''),
-                            'O.INIZIO': orario_seconda_str
+                            'O.INIZIO': second_hour_str
                         }
                         processed_rows.append(second_row)
                         row_counter += 1
                         
-                        print(f"Convertita lezione 2h00: {row.get('CLASSE', '')} {row.get('GIORNO', '')} {orario_inizio_str} -> {orario_seconda_str}")
+                        print(f"Converted 2h00 lesson: {row.get('CLASSE', '')} {row.get('GIORNO', '')} {start_time_str} -> {second_hour_str}")
                     else:
-                        print(f"Errore: orario {orario_inizio_str} non trovato nella mappa degli orari o è l'ultima ora del giorno")
-                        # riga originale se conversione non va a buon fine.
+                        print(f"Error: time {start_time_str} not found in the schedule map or is the last hour of the day")
+                        # Original row if conversion fails
                         processed_row = {
                             'NUMERO': row_counter,
                             'DURATA': durata,
                             'CLASSE': row.get('CLASSE', ''),
                             'AULA': row.get('AULA', ''),
                             'GIORNO': row.get('GIORNO', ''),
-                            'O.INIZIO': orario_inizio_str
+                            'O.INIZIO': start_time_str
                         }
                         processed_rows.append(processed_row)
                         row_counter += 1
@@ -112,20 +112,20 @@ def process_csv():
                     processed_rows.append(processed_row)
                     row_counter += 1
         
-        # scrittura output
+        # Writing output
         with open(output_file, 'w', encoding='utf-8', newline='') as outfile:
             writer = csv.DictWriter(outfile, fieldnames=output_columns, delimiter=';')
             writer.writeheader()
             writer.writerows(processed_rows)
         
-        print(f"\nProcessing completato!")
-        print(f"Righe processate: {len(processed_rows)}")
-        print(f"File salvato in: {output_file}")
+        print(f"\nProcessing completed!")
+        print(f"Rows processed: {len(processed_rows)}")
+        print(f"File saved in: {output_file}")
 
     except FileNotFoundError:
-        print(f"Errore: File {input_file} non trovato!")
+        print(f"Error: File {input_file} not found!")
     except Exception as e:
-        print(f"Errore durante il processing: {e}")
+        print(f"Error during processing: {e}")
 
 if __name__ == "__main__":
     process_csv()
