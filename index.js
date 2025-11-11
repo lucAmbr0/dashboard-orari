@@ -78,6 +78,7 @@ class Cell {
 }
 
 let offset = 0;
+let lastUpdate = new Date();
 const cells = [];
 const visibleCells = [];
 const scrollDuration = 500;
@@ -144,9 +145,37 @@ document.addEventListener('DOMContentLoaded', () => {
     getAndElaborateLessons();
 });
 
+function checkCourse() {
+    const now = new Date();
+    const intervals = [
+        { start: "08:00", end: "08:55" },
+        { start: "08:55", end: "10:00" },
+        { start: "10:00", end: "10:55" },
+        { start: "10:55", end: "11:55" },
+        { start: "11:55", end: "13:00" },
+        { start: "13:00", end: "13:50" },
+        { start: "13:50", end: "14:45" }
+    ];
+
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+
+    for (let interval of intervals) {
+        const [startHour, startMin] = interval.start.split(":").map(Number);
+        const [endHour, endMin] = interval.end.split(":").map(Number);
+        const startMins = startHour * 60 + startMin;
+        const endMins = endHour * 60 + endMin;
+
+        if (currentTime >= startMins && currentTime < endMins) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 async function getAndElaborateLessons() {
     getOrarioGiorno(orePull, giornoPull)
-        .then(lezioni => {
+        .then(async lezioni => {
             // Empty cells for padding at start
             offset = 0;
             visibleCells.length = 0;
@@ -166,7 +195,10 @@ async function getAndElaborateLessons() {
 
             offset = visibleCells.length;
 
-            startScrolling().then(() => getAndElaborateLessons());
+            while (checkCourse()) {
+                await startScrolling();
+            }
+            getAndElaborateLessons();
         })
         .catch(error => console.error(error));
 }
