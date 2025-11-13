@@ -81,14 +81,14 @@ let offset = 0;
 let lastUpdate = new Date();
 const cells = [];
 const visibleCells = [];
-const scrollDuration = 500;
-const delayBetween = 3000;
-const orePull = "08h00";
-const giornoPull = "martedì";
+let stepSize = 3;
+let scrollDuration = 500;
+let delayBetween = 3000;
+let orePull = "08h00";
+let giornoPull = "martedì";
 
 async function startScrolling() {
     const container = document.getElementById("cellsWrapper");
-    const stepSize = 3;
 
     async function scrollStep() {
         container.classList.add("trigger-scrollUp");
@@ -142,42 +142,113 @@ async function getOrarioGiorno(orario, giorno) {
 
 // Trigger at page load
 document.addEventListener('DOMContentLoaded', () => {
-    getAndElaborateLessons();
+    if (!localStorage.getItem(`last-update`)) {
+        getAndElaborateLessons();
+    } else {
+        const date = new Date();
+        const lastUpdate = JSON.parse(localStorage.getItem(`last-update`));
+        compareUpdateTime(lastUpdate, date);
+        formatDay(date);
+        formatTime(date);
+    }
 });
 
-function checkCourse() {
-    const now = new Date();
+function compareUpdateTime(lastUpdate, now) {
     const intervals = [
-        { start: "08:00", end: "08:55" },
-        { start: "08:55", end: "10:00" },
-        { start: "10:00", end: "10:55" },
-        { start: "10:55", end: "11:55" },
-        { start: "11:55", end: "13:00" },
-        { start: "13:00", end: "13:50" },
-        { start: "13:50", end: "14:45" }
+        {start: {}, end: {}}
+    ]
+    new Date(year,month,day,hours,minutes);
+    new Date(year,month,day,hours,minutes);
+    new Date(year,month,day,hours,minutes);
+    new Date(year,month,day,hours,minutes);
+}
+
+function formatDay(date) {
+    switch (date.getDay()) {
+        case 0:
+            return "domenica";
+        case 1:
+            return "lunedì";
+        case 2:
+            return "martedì";
+        case 3:
+            return "mercoledì";
+        case 4:
+            return "giovedì";
+        case 5:
+            return "venerdì";
+        case 6:
+            return "sabato";
+        default:
+            console.error("Couldn't format day to pull");
+            break;
+    }
+}
+
+function formatTime(date) {
+    const hour = date.getHours();
+    const minute = date.getMinutes();
+
+    const intervals = [
+        { start: "08h00", end: "08h55" },
+        { start: "08h55", end: "10h00" },
+        { start: "10h00", end: "10h55" },
+        { start: "10h55", end: "11h55" },
+        { start: "11h55", end: "13h00" },
+        { start: "13h00", end: "13h50" },
+        { start: "13h50", end: "14h45" }
     ];
 
-    const currentTime = now.getHours() * 60 + now.getMinutes();
-
     for (let interval of intervals) {
-        const [startHour, startMin] = interval.start.split(":").map(Number);
-        const [endHour, endMin] = interval.end.split(":").map(Number);
+        const [startHour, startMin] = interval.start.split("h").map(Number);
+        const [endHour, endMin] = interval.end.split("h").map(Number);
         const startMins = startHour * 60 + startMin;
         const endMins = endHour * 60 + endMin;
 
         if (currentTime >= startMins && currentTime < endMins) {
-            return true;
+            console.log("GJHAGJKHADGJK - " + interval.start);
+            
+            return interval.start;
         }
     }
 
-    return false;
 }
+
+// function checkCourse() {
+//     const now = new Date();
+//     const intervals = [
+//         { start: "08:00", end: "08:55" },
+//         { start: "08:55", end: "10:00" },
+//         { start: "10:00", end: "10:55" },
+//         { start: "10:55", end: "11:55" },
+//         { start: "11:55", end: "13:00" },
+//         { start: "13:00", end: "13:50" },
+//         { start: "13:50", end: "14:45" }
+//     ];
+
+//     const currentTime = now.getHours() * 60 + now.getMinutes();
+
+//     for (let interval of intervals) {
+//         const [startHour, startMin] = interval.start.split(":").map(Number);
+//         const [endHour, endMin] = interval.end.split(":").map(Number);
+//         const startMins = startHour * 60 + startMin;
+//         const endMins = endHour * 60 + endMin;
+
+//         if (currentTime >= startMins && currentTime < endMins) {
+//             return true;
+//         }
+//     }
+
+//     return false;
+// }
 
 async function getAndElaborateLessons() {
     getOrarioGiorno(orePull, giornoPull)
         .then(async lezioni => {
             // Empty cells for padding at start
             offset = 0;
+            localStorage.setItem(`lessons-${giornoPull}-${orePull}`, JSON.stringify(lezioni));
+            localStorage.setItem(`last-update`, JSON.stringify(new Date()));
             visibleCells.length = 0;
             document.getElementById("cellsWrapper").innerHTML = "";
             for (let i = 0; i < 3; i++)
@@ -195,10 +266,7 @@ async function getAndElaborateLessons() {
 
             offset = visibleCells.length;
 
-            while (checkCourse()) {
-                await startScrolling();
-            }
-            getAndElaborateLessons();
+            await startScrolling();
         })
         .catch(error => console.error(error));
 }
