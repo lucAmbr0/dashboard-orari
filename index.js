@@ -84,8 +84,17 @@ const visibleCells = [];
 let stepSize = 3;
 let scrollDuration = 500;
 let delayBetween = 3000;
-let orePull = "08h00";
-let giornoPull = "martedì";
+let orePull = "";
+let giornoPull = "";
+const intervals = [
+    { start: "08h00", end: "08h55" },
+    { start: "08h55", end: "10h00" },
+    { start: "10h00", end: "10h55" },
+    { start: "10h55", end: "11h55" },
+    { start: "11h55", end: "13h00" },
+    { start: "13h00", end: "13h50" },
+    { start: "13h50", end: "14h45" }
+];
 
 async function startScrolling() {
     const container = document.getElementById("cellsWrapper");
@@ -128,11 +137,12 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function getOrarioGiorno(orario, giorno) {
+async function getOrarioGiorno(giorno, orario) {
     return fetch(`get_orario.php?orario=${orario}&giorno=${giorno}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                localStorage.setItem(`lessons-${giorno}-${orario}`, JSON.stringify({ lezioni }));
                 return data.classi;
             } else {
                 throw new Error(data.message);
@@ -142,25 +152,32 @@ async function getOrarioGiorno(orario, giorno) {
 
 // Trigger at page load
 document.addEventListener('DOMContentLoaded', () => {
-    if (!localStorage.getItem(`last-update`)) {
-        getAndElaborateLessons();
+    const date = new Date();
+    orePull = getRelativeInterval(formatTime(date), intervals, 0);
+    giornoPull = formatDay(date);
+    if (!localStorage.getItem(`lessons-${giornoPull}-${orePull}`)) {
+        console.log("Current lessons object not found in localStorage");
+        console.log(giornoPull);
+        console.log(orePull);
+        getAndElaborateLessons(giornoPull, orePull);
     } else {
-        const date = new Date();
-        const lastUpdate = JSON.parse(localStorage.getItem(`last-update`));
-        compareUpdateTime(lastUpdate, date);
-        formatDay(date);
-        formatTime(date);
+        if (localStorage.getItem(`lessons-${giornoPull}-${getRelativeInterval(orePull, intervals, -1)}`)) {
+            // Removing old lessons to optimize localStorage
+            localStorage.removeItem(`lessons-${giornoPull}-${getRelativeInterval(orePull, intervals, -1)}`);
+            console.log("Removed old lessons object from localStorage");
+        }
+        if (localStorage.getItem(`lessons-${giornoPull}-${getRelativeInterval(orePull, intervals, +1)}`)) {
+            // We have both current AND next interval lessons (we are in the same interval)
+            console.log("Found next lessons object in localStorage");
+        } else {
+            // We have the current interval but not the next one (an hour passed)
+            console.log("Next lessons object NOT found in localStorage");
+        }
     }
 });
 
-function compareUpdateTime(lastUpdate, now) {
-    const intervals = [
-        {start: {}, end: {}}
-    ]
-    new Date(year,month,day,hours,minutes);
-    new Date(year,month,day,hours,minutes);
-    new Date(year,month,day,hours,minutes);
-    new Date(year,month,day,hours,minutes);
+function compareTimes(lastUpdate, now) {
+    return lastUpdate.getHours() == now.getHours();
 }
 
 function formatDay(date) {
@@ -185,70 +202,44 @@ function formatDay(date) {
     }
 }
 
-function formatTime(date) {
-    const hour = date.getHours();
-    const minute = date.getMinutes();
-
-    const intervals = [
-        { start: "08h00", end: "08h55" },
-        { start: "08h55", end: "10h00" },
-        { start: "10h00", end: "10h55" },
-        { start: "10h55", end: "11h55" },
-        { start: "11h55", end: "13h00" },
-        { start: "13h00", end: "13h50" },
-        { start: "13h50", end: "14h45" }
-    ];
-
-    for (let interval of intervals) {
-        const [startHour, startMin] = interval.start.split("h").map(Number);
-        const [endHour, endMin] = interval.end.split("h").map(Number);
-        const startMins = startHour * 60 + startMin;
-        const endMins = endHour * 60 + endMin;
-
-        if (currentTime >= startMins && currentTime < endMins) {
-            console.log("GJHAGJKHADGJK - " + interval.start);
-            
-            return interval.start;
-        }
-    }
-
+function formatTime(dateInput) {
+    const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${hours}h${minutes}`;
 }
 
-// function checkCourse() {
-//     const now = new Date();
-//     const intervals = [
-//         { start: "08:00", end: "08:55" },
-//         { start: "08:55", end: "10:00" },
-//         { start: "10:00", end: "10:55" },
-//         { start: "10:55", end: "11:55" },
-//         { start: "11:55", end: "13:00" },
-//         { start: "13:00", end: "13:50" },
-//         { start: "13:50", end: "14:45" }
-//     ];
+function parseTimeToMinutes(timeStr) {
+    const [h, m] = timeStr.split("h").map(Number);
+    return h * 60 + m;
+}
 
-//     const currentTime = now.getHours() * 60 + now.getMinutes();
+function findIntervalIndex(timeStr, intervals) {
+    const totalMinutes = parseTimeToMinutes(timeStr);
 
-//     for (let interval of intervals) {
-//         const [startHour, startMin] = interval.start.split(":").map(Number);
-//         const [endHour, endMin] = interval.end.split(":").map(Number);
-//         const startMins = startHour * 60 + startMin;
-//         const endMins = endHour * 60 + endMin;
+    return intervals.findIndex(({ start, end }) => {
+        const startMinutes = parseTimeToMinutes(start);
+        const endMinutes = parseTimeToMinutes(end);
+        return totalMinutes >= startMinutes && totalMinutes < endMinutes;
+    });
+}
 
-//         if (currentTime >= startMins && currentTime < endMins) {
-//             return true;
-//         }
-//     }
+function getRelativeInterval(timeStr, intervals, offset = 0) {
+    const index = findIntervalIndex(timeStr, intervals);
+    if (index === -1) return null; // Not in any interval
 
-//     return false;
-// }
+    const targetIndex = index + offset;
+    if (targetIndex < 0 || targetIndex >= intervals.length) return null;
 
-async function getAndElaborateLessons() {
-    getOrarioGiorno(orePull, giornoPull)
+    return intervals[targetIndex].start;
+}
+
+
+async function getAndElaborateLessons(giornoPull, orePull) {
+    getOrarioGiorno(giornoPull, orePull)
         .then(async lezioni => {
             // Empty cells for padding at start
             offset = 0;
-            localStorage.setItem(`lessons-${giornoPull}-${orePull}`, JSON.stringify(lezioni));
-            localStorage.setItem(`last-update`, JSON.stringify(new Date()));
             visibleCells.length = 0;
             document.getElementById("cellsWrapper").innerHTML = "";
             for (let i = 0; i < 3; i++)
