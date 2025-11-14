@@ -26,8 +26,8 @@ class Cell {
     constructor(year, section, currentRoom, nextRoom) {
         this.year = year;
         this.section = section;
-        this.currentRoom = currentRoom;
-        this.nextRoom = nextRoom ? nextRoom : "Uscita";
+        this.currentRoom = currentRoom && currentRoom != "" ? currentRoom : "Assente";
+        this.nextRoom = nextRoom && nextRoom != "" ? nextRoom : (currentRoom == "Assente" ? "Assente" : "Uscita");
 
         this.html = document.createElement('div');
         this.html.classList.add("cellContainer", `bg-class-${this.year}`);
@@ -142,7 +142,7 @@ async function getOrarioGiorno(giorno, orario) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                localStorage.setItem(`lessons-${giorno}-${orario}`, JSON.stringify({ lezioni }));
+                localStorage.setItem(`lessons-${giorno}-${orario}`, JSON.stringify(data.classi));
                 return data.classi;
             } else {
                 throw new Error(data.message);
@@ -151,29 +151,31 @@ async function getOrarioGiorno(giorno, orario) {
 }
 
 // Trigger at page load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const date = new Date();
     orePull = getRelativeInterval(formatTime(date), intervals, 0);
     giornoPull = formatDay(date);
-    if (!localStorage.getItem(`lessons-${giornoPull}-${orePull}`)) {
-        console.log("Current lessons object not found in localStorage");
-        console.log(giornoPull);
-        console.log(orePull);
-        getAndElaborateLessons(giornoPull, orePull);
-    } else {
-        if (localStorage.getItem(`lessons-${giornoPull}-${getRelativeInterval(orePull, intervals, -1)}`)) {
-            // Removing old lessons to optimize localStorage
-            localStorage.removeItem(`lessons-${giornoPull}-${getRelativeInterval(orePull, intervals, -1)}`);
-            console.log("Removed old lessons object from localStorage");
-        }
-        if (localStorage.getItem(`lessons-${giornoPull}-${getRelativeInterval(orePull, intervals, +1)}`)) {
-            // We have both current AND next interval lessons (we are in the same interval)
-            console.log("Found next lessons object in localStorage");
-        } else {
-            // We have the current interval but not the next one (an hour passed)
-            console.log("Next lessons object NOT found in localStorage");
-        }
-    }
+    // if (!localStorage.getItem(`lessons-${giornoPull}-${orePull}`)) {
+    //     console.log("Current lessons object not found in localStorage");
+    //     console.log(giornoPull);
+    //     console.log(orePull);
+        await getAndElaborateLessons(giornoPull, orePull);
+        await sleep(6000);
+        window.location.reload();
+    // } else {
+    //     if (localStorage.getItem(`lessons-${giornoPull}-${getRelativeInterval(orePull, intervals, -1)}`)) {
+    //         // Removing old lessons to optimize localStorage
+    //         localStorage.removeItem(`lessons-${giornoPull}-${getRelativeInterval(orePull, intervals, -1)}`);
+    //         console.log("Removed old lessons object from localStorage");
+    //     }
+    //     if (localStorage.getItem(`lessons-${giornoPull}-${getRelativeInterval(orePull, intervals, +1)}`)) {
+    //         // We have both current AND next interval lessons (we are in the same interval)
+    //         console.log("Found next lessons object in localStorage");
+    //     } else {
+    //         // We have the current interval but not the next one (an hour passed)
+    //         console.log("Next lessons object NOT found in localStorage");
+    //     }
+    // }
 });
 
 function compareTimes(lastUpdate, now) {
@@ -236,28 +238,42 @@ function getRelativeInterval(timeStr, intervals, offset = 0) {
 
 
 async function getAndElaborateLessons(giornoPull, orePull) {
-    getOrarioGiorno(giornoPull, orePull)
-        .then(async lezioni => {
-            // Empty cells for padding at start
-            offset = 0;
-            visibleCells.length = 0;
-            document.getElementById("cellsWrapper").innerHTML = "";
-            for (let i = 0; i < 3; i++)
-                cells.push(new Cell(-1));
-            lezioni.forEach(lezione => {
-                const anno = lezione.CLASSE.slice(0, 1);
-                const sezione = lezione.CLASSE.slice(1);
-                cells.push(new Cell(anno, sezione, lezione.AULA, lezione.AULA));
-            });
+    try {
+        const currentLessons = await getOrarioGiorno(giornoPull, orePull);
+        const nextLessons = await getOrarioGiorno(giornoPull, getRelativeInterval(orePull, intervals, 1));
 
-            for (let i = 0; i < 12 && i < cells.length; i++) {
-                cells[i].appendToUI();
-                visibleCells.push(cells[i]);
+        // Clear previous cells and reset state
+        offset = 0;
+        visibleCells.length = 0;
+        document.getElementById("cellsWrapper").innerHTML = "";
+
+        // Add padding cells at the start
+        cells.length = 0; // Clear the cells array
+        for (let i = 0; i < 3; i++) {
+            cells.push(new Cell(-1));
+        }
+
+        const nextLessonsMap = new Map(nextLessons.map(lesson => [lesson.CLASSE, lesson]));
+
+        currentLessons.forEach(currentLesson => {
+            if (currentLesson.CLASSE && currentLesson.AULA) {
+                const anno = currentLesson.CLASSE[0];
+                const sezione = currentLesson.CLASSE.slice(1);
+                const nextRoom = nextLessonsMap.get(currentLesson.CLASSE)?.AULA || "Uscita";
+                cells.push(new Cell(anno, sezione, currentLesson.AULA, nextRoom));
             }
+        });
 
-            offset = visibleCells.length;
+        // Display initial cells
+        cells.slice(0, Math.min(12, cells.length)).forEach(cell => {
+            cell.appendToUI();
+            visibleCells.push(cell);
+        });
 
-            await startScrolling();
-        })
-        .catch(error => console.error(error));
+        offset = visibleCells.length;
+
+        await startScrolling();
+    } catch (error) {
+        console.error("Error in getAndElaborateLessons:", error);
+    }
 }
