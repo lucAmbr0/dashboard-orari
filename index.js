@@ -83,7 +83,7 @@ const cells = [];
 const visibleCells = [];
 let stepSize = 3;
 let scrollDuration = 500;
-let delayBetween = 3000;
+let delayBetween = 2000;
 let orePull = "";
 let giornoPull = "";
 const intervals = [
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     //     console.log(giornoPull);
     //     console.log(orePull);
         await getAndElaborateLessons(giornoPull, orePull);
-        await sleep(6000);
+        await sleep(delayBetween*2);
         window.location.reload();
     // } else {
     //     if (localStorage.getItem(`lessons-${giornoPull}-${getRelativeInterval(orePull, intervals, -1)}`)) {
