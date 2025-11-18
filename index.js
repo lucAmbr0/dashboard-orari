@@ -1,7 +1,7 @@
 // ------------ ICONS DICTIONARY ------------
 // distance                   ==> aula corrente
-// transfer_within_a_station  ==> successiva, cambio aula
-// guardian                   ==> successiva, stessa aula
+// directions_walk            ==> successiva, cambio aula
+// accessibility              ==> successiva, stessa aula
 // emoji_people               ==> uscita
 
 // ------------ CELL HTML FORMAT ------------
@@ -14,7 +14,7 @@
             </div>
             <hr class="grid-hr">
             <div class="row">
-                <span class="icon material-symbols-outlined">guardian</span>
+                <span class="icon material-symbols-outlined">accessibility</span>
                 <p class="roomText">Lab. Informatica 2</p>
             </div>
         </div>
@@ -46,10 +46,10 @@ class Cell {
                 <hr class="grid-hr">
                 <div class="row">
                     <span class="icon material-symbols-outlined">${this.currentRoom == this.nextRoom
-                    ? "guardian"
+                    ? "accessibility"
                     : this.nextRoom == "Uscita"
                         ? "emoji_people"
-                        : "transfer_within_a_station"
+                        : "directions_walk"
                 }</span>
                     <p class="roomText">${this.nextRoom}</p>
                 </div>
@@ -83,7 +83,7 @@ const cells = [];
 const visibleCells = [];
 let stepSize = 3;
 let scrollDuration = 500;
-let delayBetween = 2000;
+let delayBetween = 5000;
 let orePull = "";
 let giornoPull = "";
 const intervals = [
