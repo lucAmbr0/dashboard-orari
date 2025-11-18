@@ -78,15 +78,16 @@ class Cell {
 }
 
 let offset = 0;
-let lastUpdate = new Date();
 const cells = [];
 const visibleCells = [];
+let showingSettings = false;
+let useCurrentDayAndTime = true;
 let stepSize = 3;
 let scrollDuration = 500;
 let delayBetween = 5000;
 let orePull = "";
 let giornoPull = "";
-const intervals = [
+let intervals = [
     { start: "08h00", end: "08h55" },
     { start: "08h55", end: "10h00" },
     { start: "10h00", end: "10h55" },
@@ -95,6 +96,118 @@ const intervals = [
     { start: "13h00", end: "13h50" },
     { start: "13h50", end: "14h45" }
 ];
+
+document.getElementById("useCurrentDayAndTimeInput").addEventListener("change", () => {
+    useCurrentDayAndTime = document.getElementById("useCurrentDayAndTimeInput").checked;
+    document.getElementById("dayAndHourSelector").style.display = useCurrentDayAndTime ? "none" : "block";
+});
+
+function loadSettings() {
+    if (localStorage.getItem("dashboard-orari-settings")) {
+        const settings = JSON.parse(localStorage.getItem("dashboard-orari-settings"));
+        if (settings.interval) delayBetween = settings.interval;
+        if (settings.animationDuration) scrollDuration = settings.animationDuration;
+        if (settings.useCurrentDayAndTime === true || settings.useCurrentDayAndTime === false) {
+            useCurrentDayAndTime = settings.useCurrentDayAndTime;
+            document.getElementById("useCurrentDayAndTimeInput").checked = useCurrentDayAndTime;
+            document.getElementById("dayAndHourSelector").style.display = useCurrentDayAndTime ? "none" : "block";
+        } else {
+            document.getElementById("dayAndHourSelector").style.display = "none";
+        }
+        if (settings.day) {
+            document.getElementById("dayInput").value = settings.day;
+            giornoPull = settings.day;
+        }
+        if (settings.intervals) {
+            intervals = settings.intervals;
+            document.getElementById("intervalsJson").value = JSON.stringify(settings.intervals, null, 1);
+        } else {
+            document.getElementById("intervalsJson").value = JSON.stringify(intervals, null, 1);
+        }
+        if (settings.hour) {
+            document.getElementById("hourInput").value = settings.hour;
+            orePull = settings.hour;
+        }
+    } else {
+        document.getElementById("intervalsJson").value = JSON.stringify(intervals, null, 1);
+        document.getElementById("hourInput").value = intervals[0].start;
+        document.getElementById("useCurrentDayAndTimeInput").checked = useCurrentDayAndTime;
+        document.getElementById("dayAndHourSelector").style.display = "none";
+    }
+    appendIntervals();
+}
+
+function saveSettings() {
+    const interval = document.getElementById("intervalInput").value;
+    const animationDuration = document.getElementById("animationDurationInput").value;
+    const useCurrentDayAndTime = document.getElementById("useCurrentDayAndTimeInput").checked;
+
+    const day = document.getElementById("dayInput").value;
+    const hour = document.getElementById("hourInput").value;
+    const intervalsJson = document.getElementById("intervalsJson").value;
+
+    const settings = {};
+
+    if (interval >= 0 && interval <= 10000) settings.interval = interval;
+    else settings.interval = 5000;
+    if (animationDuration >= 100 && animationDuration <= 2000) settings.animationDuration = animationDuration;
+    else settings.animationDuration = 500;
+    settings.useCurrentDayAndTime = useCurrentDayAndTime;
+    switch (day) {
+        case "lunedì":
+        case "martedì":
+        case "mercoledì":
+        case "giovedì":
+        case "venerdì":
+        case "sabato":
+            settings.day = day;
+            break;
+        default:
+            settings.day = "lunedì"
+            break;
+    }
+    const defaultIntervals = [
+        { start: "08h00", end: "08h55" },
+        { start: "08h55", end: "10h00" },
+        { start: "10h00", end: "10h55" },
+        { start: "10h55", end: "11h55" },
+        { start: "11h55", end: "13h00" },
+        { start: "13h00", end: "13h50" },
+        { start: "13h50", end: "14h45" }
+    ];
+
+    try {
+        const parsedIntervals = JSON.parse(intervalsJson);
+        if (Array.isArray(parsedIntervals) && parsedIntervals.every(item =>
+            item.start && item.end && typeof item.start === 'string' && typeof item.end === 'string')) {
+            settings.intervals = parsedIntervals;
+        } else {
+            console.error("Invalid intervals format. Expected array of objects with 'start' and 'end' properties.");
+            settings.intervals = defaultIntervals;
+        }
+    } catch (error) {
+        console.error("Failed to parse intervalsJson:", error);
+        settings.intervals = defaultIntervals;
+    }
+
+    const validHour = settings.intervals.some(interval => interval.start === hour)
+        ? hour
+        : settings.intervals[0].start;
+    settings.hour = validHour;
+
+    localStorage.setItem("dashboard-orari-settings", JSON.stringify(settings));
+    window.location.reload();
+}
+
+function appendIntervals() {
+    const selector = document.getElementById("hourInput");
+    for (const interval of intervals) {
+        const option = document.createElement("option");
+        option.value = interval.start;
+        option.textContent = `${interval.start} - ${interval.end}`;
+        selector.appendChild(option);
+    }
+}
 
 async function startScrolling() {
     const container = document.getElementById("cellsWrapper");
@@ -138,11 +251,15 @@ function sleep(ms) {
 }
 
 async function getOrarioGiorno(giorno, orario) {
+    if (orario == null) {
+        document.getElementById("cellsWrapper").innerHTML += "<h1>Non ci sono lezioni da mostrare.</h1>"
+        throw new Error("There's no valid interval for the current time.");
+    }
     return fetch(`get_orario.php?orario=${orario}&giorno=${giorno}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                localStorage.setItem(`lessons-${giorno}-${orario}`, JSON.stringify(data.classi));
+                // localStorage.setItem(`lessons-${giorno}-${orario}`, JSON.stringify(data.classi));
                 return data.classi;
             } else {
                 throw new Error(data.message);
@@ -152,16 +269,23 @@ async function getOrarioGiorno(giorno, orario) {
 
 // Trigger at page load
 document.addEventListener('DOMContentLoaded', async () => {
-    const date = new Date();
-    orePull = getRelativeInterval(formatTime(date), intervals, 0);
-    giornoPull = formatDay(date);
+    console.log("Hidden button in the bottom-left corner opens settings.");
+    loadSettings();
+
+    if (useCurrentDayAndTime) {
+        const date = new Date();
+        orePull = getRelativeInterval(formatTime(date), intervals, 0);
+        giornoPull = formatDay(date);
+    }
     // if (!localStorage.getItem(`lessons-${giornoPull}-${orePull}`)) {
     //     console.log("Current lessons object not found in localStorage");
     //     console.log(giornoPull);
     //     console.log(orePull);
-        await getAndElaborateLessons(giornoPull, orePull);
-        await sleep(delayBetween*2);
+    await getAndElaborateLessons(giornoPull, orePull);
+    await sleep(delayBetween * 2);
+    if (!showingSettings) {
         window.location.reload();
+    }
     // } else {
     //     if (localStorage.getItem(`lessons-${giornoPull}-${getRelativeInterval(orePull, intervals, -1)}`)) {
     //         // Removing old lessons to optimize localStorage
@@ -200,6 +324,7 @@ function formatDay(date) {
             return "sabato";
         default:
             console.error("Couldn't format day to pull");
+            return "none";
             break;
     }
 }
@@ -273,7 +398,13 @@ async function getAndElaborateLessons(giornoPull, orePull) {
         offset = visibleCells.length;
 
         await startScrolling();
+
     } catch (error) {
         console.error("Error in getAndElaborateLessons:", error);
     }
+}
+
+function showSettings() {
+    document.getElementById("settingsOverlay").classList.remove("hidden");
+    showingSettings = true;
 }

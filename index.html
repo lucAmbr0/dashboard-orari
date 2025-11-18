@@ -10,10 +10,59 @@
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="assets/icon.png" type="image/png">
     <title>Display orari</title>
 </head>
 
 <body>
+    <button id="toggleSettingsBtn" onclick="showSettings()"><span class="icon material-symbols-outlined">settings</span></button>
+    <div id="settingsOverlay" class="hidden">
+        <div id="settingsContainer">
+            <h2>Impostazioni</h2>
+            <hr>
+            <div class="settingsGrid">
+                <label for="intervalInput">
+                    Intervallo scroll (ms)
+                </label>
+                <input type="number" min="0" max="10000" step="500" value="5000" required id="intervalInput">
+                <label for="animationDurationInput">
+                    Durata animazione scroll (ms)
+                </label>
+                <input type="number" min="100" max="2000" step="100" value="500" required id="animationDurationInput">
+                <label for="intervalsJson">
+                    Intervalli di ore per le lezioni (formato JSON)
+                </label>
+                <textarea rows="6" cols="60" id="intervalsJson"></textarea>
+                <label for="useCurrentDayAndTimeInput">
+                    Usa giorno e ora corrente per il caricamento delle lezioni
+                </label>
+                <input type="checkbox" required id="useCurrentDayAndTimeInput" checked>
+            </div>
+            <div id="dayAndHourSelector">
+                <div class="settingsGrid">
+                    <label for="dayInput">
+                        Giorno richiesta dati
+                    </label>
+                    <select name="dayInput" id="dayInput" required>
+                        <option value="lunedì">Lunedì</option>
+                        <option value="martedì">Martedì</option>
+                        <option value="mercoledì">Mercoledì</option>
+                        <option value="giovedì">Giovedì</option>
+                        <option value="venerdì">Venerdì</option>
+                        <option value="sabato">Sabato</option>
+                        <option value="domenica">Domenica</option>
+                    </select>
+                    <label for="hourInput">
+                        Ora richiesta dati
+                    </label>
+                    <select name="hourInput" id="hourInput" required>
+                        <!-- Options are added dynamically by function appendIntervals() in index.js -->
+                    </select>
+                </div>
+            </div>
+            <button id="saveSettingsBtn" onclick="saveSettings()">Salva impostazioni</button>
+        </div>
+    </div>
     <div class="groupContainer" id="groupContainer">
         <div id="cellsWrapper">
         </div>
