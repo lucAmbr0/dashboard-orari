@@ -60,7 +60,7 @@ class Cell {
 
     appendToUI() {
         const container = document.getElementById("cellsWrapper");
-        this.html.style.animation = "appearUp 0.5s ease forwards";
+        this.html.style.animation = `appearUp ${scrollDuration}ms ease forwards`;
         container.appendChild(this.html);
         this.displayed = true;
         console.log("APPEND CELL:", this.year + this.section);
@@ -105,8 +105,12 @@ document.getElementById("useCurrentDayAndTimeInput").addEventListener("change", 
 function loadSettings() {
     if (localStorage.getItem("dashboard-orari-settings")) {
         const settings = JSON.parse(localStorage.getItem("dashboard-orari-settings"));
-    if (settings.interval) delayBetween = Number(settings.interval);
-    if (settings.animationDuration) scrollDuration = Number(settings.animationDuration);
+        if (settings.interval) delayBetween = Number(settings.interval);
+        else delayBetween = 5000;
+        document.getElementById("intervalInput").value = delayBetween;
+        if (settings.animationDuration) scrollDuration = Number(settings.animationDuration);
+        else scrollDuration = 500;
+        document.getElementById("animationDurationInput").value = scrollDuration;
         if (settings.useCurrentDayAndTime === true || settings.useCurrentDayAndTime === false) {
             useCurrentDayAndTime = settings.useCurrentDayAndTime;
             document.getElementById("useCurrentDayAndTimeInput").checked = useCurrentDayAndTime;
@@ -210,10 +214,20 @@ function appendIntervals() {
     }
 }
 
+async function getScrollDistance() {
+    const container = document.getElementById("cellsWrapper");
+    const firstCell = container.querySelector(".cellContainer");
+    const scrollDistance = firstCell.getBoundingClientRect().height + 20;
+    return `${-scrollDistance}px`;
+}
+
 async function startScrolling() {
     const container = document.getElementById("cellsWrapper");
 
     async function scrollStep() {
+        const scrollDistance = await getScrollDistance();
+        container.style.setProperty('--scroll-distance', scrollDistance);
+        container.style.animationDuration = `${scrollDuration}ms`;
         container.classList.add("trigger-scrollUp");
 
         await sleep(scrollDuration);
@@ -224,12 +238,10 @@ async function startScrolling() {
         }
 
         const nextCells = cells.slice(offset, offset + stepSize);
-        console.log("scrollStep: before append. offset=", offset, "cells.length=", cells.length, "nextCells.length=", nextCells.length, "visibleCells.afterRemove=", visibleCells.length);
         nextCells.forEach(c => {
             c.appendToUI();
             visibleCells.push(c);
         });
-        console.log("scrollStep: after append. offset will increment by", nextCells.length, "visibleCells=", visibleCells.length);
         offset += nextCells.length;
 
         container.style.transition = "none";
@@ -248,7 +260,6 @@ async function startScrolling() {
     await scrollStep();
 }
 
-
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -263,6 +274,9 @@ async function getOrarioGiorno(giorno, orario) {
         .then(data => {
             if (data.success) {
                 // localStorage.setItem(`lessons-${giorno}-${orario}`, JSON.stringify(data.classi));
+                console.log(`Ricevuti dati per ${giorno} alle ${orario}:`);
+                console.log(data.classi);
+                
                 return data.classi;
             } else {
                 throw new Error(data.message);
@@ -376,10 +390,10 @@ async function getAndElaborateLessons(giornoPull, orePull) {
         document.getElementById("cellsWrapper").innerHTML = "";
 
         // Add padding cells at the start
-        cells.length = 0; // Clear the cells array
-        for (let i = 0; i < 3; i++) {
-            cells.push(new Cell(-1));
-        }
+        // cells.length = 0; // Clear the cells array
+        // for (let i = 0; i < 3; i++) {
+        //     cells.push(new Cell(-1));
+        // }
 
         const nextLessonsMap = new Map(nextLessons.map(lesson => [lesson.CLASSE, lesson]));
 
@@ -400,7 +414,7 @@ async function getAndElaborateLessons(giornoPull, orePull) {
 
         offset = visibleCells.length;
 
-
+        await sleep(delayBetween*2);
         await startScrolling();
 
     } catch (error) {

@@ -133,7 +133,7 @@ body {
         transform: translateY(0);
     }
     to {
-        transform: translateY(calc(-240px - 20px));
+        transform: translateY(var(--scroll-distance, calc(-240px - 20px)));
     }
 }
 
@@ -157,7 +157,7 @@ body {
 } 
 
 .trigger-scrollUp {
-    animation: scrollUp 0.5s ease forwards;
+    animation: scrollUp ease forwards;
 }
 
 #toggleSettingsBtn {
