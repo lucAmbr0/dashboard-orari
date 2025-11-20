@@ -105,8 +105,8 @@ document.getElementById("useCurrentDayAndTimeInput").addEventListener("change", 
 function loadSettings() {
     if (localStorage.getItem("dashboard-orari-settings")) {
         const settings = JSON.parse(localStorage.getItem("dashboard-orari-settings"));
-        if (settings.interval) delayBetween = settings.interval;
-        if (settings.animationDuration) scrollDuration = settings.animationDuration;
+    if (settings.interval) delayBetween = Number(settings.interval);
+    if (settings.animationDuration) scrollDuration = Number(settings.animationDuration);
         if (settings.useCurrentDayAndTime === true || settings.useCurrentDayAndTime === false) {
             useCurrentDayAndTime = settings.useCurrentDayAndTime;
             document.getElementById("useCurrentDayAndTimeInput").checked = useCurrentDayAndTime;
@@ -201,6 +201,7 @@ function saveSettings() {
 
 function appendIntervals() {
     const selector = document.getElementById("hourInput");
+    selector.innerHTML = "";
     for (const interval of intervals) {
         const option = document.createElement("option");
         option.value = interval.start;
@@ -223,10 +224,12 @@ async function startScrolling() {
         }
 
         const nextCells = cells.slice(offset, offset + stepSize);
+        console.log("scrollStep: before append. offset=", offset, "cells.length=", cells.length, "nextCells.length=", nextCells.length, "visibleCells.afterRemove=", visibleCells.length);
         nextCells.forEach(c => {
             c.appendToUI();
             visibleCells.push(c);
         });
+        console.log("scrollStep: after append. offset will increment by", nextCells.length, "visibleCells=", visibleCells.length);
         offset += nextCells.length;
 
         container.style.transition = "none";
@@ -396,6 +399,7 @@ async function getAndElaborateLessons(giornoPull, orePull) {
         });
 
         offset = visibleCells.length;
+
 
         await startScrolling();
 
