@@ -60,7 +60,7 @@ class Cell {
 
     appendToUI() {
         const container = document.getElementById("cellsWrapper");
-        this.html.style.animation = `appearUp ${scrollDuration}ms ease forwards`;
+        this.html.style.animation = `appearUp ${scrollDuration}ms ${animationCurve} forwards`;
         container.appendChild(this.html);
         this.displayed = true;
         console.log("APPEND CELL:", this.year + this.section);
@@ -85,6 +85,7 @@ let useCurrentDayAndTime = true;
 let stepSize = 3;
 let scrollDuration = 500;
 let delayBetween = 5000;
+let animationCurve = "ease";
 let orePull = "";
 let giornoPull = "";
 let intervals = [
@@ -105,12 +106,19 @@ document.getElementById("useCurrentDayAndTimeInput").addEventListener("change", 
 function loadSettings() {
     if (localStorage.getItem("dashboard-orari-settings")) {
         const settings = JSON.parse(localStorage.getItem("dashboard-orari-settings"));
+        
         if (settings.interval) delayBetween = Number(settings.interval);
         else delayBetween = 5000;
         document.getElementById("intervalInput").value = delayBetween;
+        
         if (settings.animationDuration) scrollDuration = Number(settings.animationDuration);
         else scrollDuration = 500;
         document.getElementById("animationDurationInput").value = scrollDuration;
+
+        if (settings.animationCurve) animationCurve = settings.animationCurve;
+        else animationCurve = "ease";
+        document.getElementById("animationCurveInput").value = animationCurve;
+        
         if (settings.useCurrentDayAndTime === true || settings.useCurrentDayAndTime === false) {
             useCurrentDayAndTime = settings.useCurrentDayAndTime;
             document.getElementById("useCurrentDayAndTimeInput").checked = useCurrentDayAndTime;
@@ -144,6 +152,7 @@ function loadSettings() {
 function saveSettings() {
     const interval = document.getElementById("intervalInput").value;
     const animationDuration = document.getElementById("animationDurationInput").value;
+    const animationCurve = document.getElementById("animationCurveInput").value;
     const useCurrentDayAndTime = document.getElementById("useCurrentDayAndTimeInput").checked;
 
     const day = document.getElementById("dayInput").value;
@@ -156,6 +165,18 @@ function saveSettings() {
     else settings.interval = 5000;
     if (animationDuration >= 100 && animationDuration <= 2000) settings.animationDuration = animationDuration;
     else settings.animationDuration = 500;
+    switch (animationCurve) {
+        case "linear":
+        case "ease":
+        case "ease-in":
+        case "ease-out":
+        case "cubic-bezier(0.075, 0.82, 0.465, 1)":
+            settings.animationCurve = animationCurve;
+            break;
+        default:
+            settings.animationCurve = "ease";
+            break;
+    }
     settings.useCurrentDayAndTime = useCurrentDayAndTime;
     switch (day) {
         case "lunedì":
@@ -228,6 +249,7 @@ async function startScrolling() {
         const scrollDistance = await getScrollDistance();
         container.style.setProperty('--scroll-distance', scrollDistance);
         container.style.animationDuration = `${scrollDuration}ms`;
+        container.style.animationTimingFunction = `${animationCurve}`;
         container.classList.add("trigger-scrollUp");
 
         await sleep(scrollDuration);

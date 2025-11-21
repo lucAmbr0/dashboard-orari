@@ -29,6 +29,16 @@
                     Durata animazione scroll (ms)
                 </label>
                 <input type="number" min="100" max="2000" step="100" value="500" required id="animationDurationInput">
+                <label for="animationCurveInput">
+                    Curva animazione
+                </label>
+                <select id="animationCurveInput">
+                    <option value="linear">Lineare</option>
+                    <option value="ease">Ease</option>
+                    <option value="ease-in">Ease in</option>
+                    <option value="ease-out">Ease out</option>
+                    <option value="cubic-bezier(0.075, 0.82, 0.465, 1)">Cubic bezier</option>
+                </select>
                 <label for="intervalsJson">
                     Intervalli di ore per le lezioni (formato JSON)
                 </label>
@@ -36,7 +46,7 @@
                 <label for="useCurrentDayAndTimeInput">
                     Usa giorno e ora corrente per il caricamento delle lezioni
                 </label>
-                <input type="checkbox" required id="useCurrentDayAndTimeInput" checked>
+                <input type="checkbox" id="useCurrentDayAndTimeInput" checked>
             </div>
             <div id="dayAndHourSelector">
                 <div class="settingsGrid">
