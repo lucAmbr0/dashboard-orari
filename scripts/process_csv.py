@@ -53,6 +53,30 @@ def clean_aula(aula_value):
     cleaned = re.sub(r'\s+PLESSO\s+[A-D]', '', aula_value, flags=re.IGNORECASE)
     return cleaned.strip()
 
+def remove_accents(text):
+    """
+    Removes accents from Italian weekdays
+    Examples:
+    'martedì' -> 'martedi'
+    'mercoledì' -> 'mercoledi'
+    'giovedì' -> 'giovedi'
+    'venerdì' -> 'venerdi'
+    """
+    if not text:
+        return text
+    
+    # Dictionary for accent removal from Italian weekdays
+    accent_replacements = {
+        'à': 'a', 'è': 'e', 'é': 'e', 'ì': 'i', 'í': 'i',
+        'ò': 'o', 'ó': 'o', 'ù': 'u', 'ú': 'u'
+    }
+    
+    result = text.lower()
+    for accented, normal in accent_replacements.items():
+        result = result.replace(accented, normal)
+    
+    return result
+
 def process_csv():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     input_file = os.path.join(script_dir, 'EXP_COURS.csv')
@@ -117,7 +141,7 @@ def process_csv():
                         'DURATA': durata if durata else '1h00',
                         'CLASSE': row.get('CLASSE', ''),
                         'AULA': clean_aula(row.get('AULA', '')),
-                        'GIORNO': row.get('GIORNO', ''),
+                        'GIORNO': remove_accents(row.get('GIORNO', '')),
                         'O.INIZIO': start_time
                     }
                     processed_rows.append(out_row)
@@ -141,7 +165,7 @@ def process_csv():
                             'DURATA': '1h00',
                             'CLASSE': row.get('CLASSE', ''),
                             'AULA': clean_aula(row.get('AULA', '')),
-                            'GIORNO': row.get('GIORNO', ''),
+                            'GIORNO': remove_accents(row.get('GIORNO', '')),
                             'O.INIZIO': chunk_start
                         }
                         processed_rows.append(out_row)
