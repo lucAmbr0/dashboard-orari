@@ -38,6 +38,21 @@ def get_start_index(start_time):
     except ValueError:
         return None
 
+def clean_aula(aula_value):
+    """
+    Removes 'PLESSO A', 'PLESSO B', 'PLESSO C', 'PLESSO D' from the AULA field
+    Examples:
+    'AULA 03 PLESSO A' -> 'AULA 03'
+    'LAB. MECCANICA PLESSO B' -> 'LAB. MECCANICA'
+    """
+    if not aula_value:
+        return aula_value
+    
+    # Remove PLESSO A/B/C/D (case insensitive)
+    import re
+    cleaned = re.sub(r'\s+PLESSO\s+[A-D]', '', aula_value, flags=re.IGNORECASE)
+    return cleaned.strip()
+
 def process_csv():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     input_file = os.path.join(script_dir, 'EXP_COURS.csv')
@@ -101,7 +116,7 @@ def process_csv():
                         'NUMERO': original_num,
                         'DURATA': durata if durata else '1h00',
                         'CLASSE': row.get('CLASSE', ''),
-                        'AULA': row.get('AULA', ''),
+                        'AULA': clean_aula(row.get('AULA', '')),
                         'GIORNO': row.get('GIORNO', ''),
                         'O.INIZIO': start_time
                     }
@@ -125,7 +140,7 @@ def process_csv():
                             'NUMERO': assigned_num,
                             'DURATA': '1h00',
                             'CLASSE': row.get('CLASSE', ''),
-                            'AULA': row.get('AULA', ''),
+                            'AULA': clean_aula(row.get('AULA', '')),
                             'GIORNO': row.get('GIORNO', ''),
                             'O.INIZIO': chunk_start
                         }
