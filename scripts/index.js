@@ -290,6 +290,9 @@ async function getOrarioGiorno(giorno, orario) {
     if (orario == null) {
         document.getElementById("cellsWrapper").innerHTML += "<h1>Non ci sono lezioni da mostrare.</h1>"
         throw new Error("There's no valid interval for the current time.");
+    } // if orario is after last interval, we have no lessons to show, return empty array so the frontend will dispaly "Uscita"
+    else if (orario == "out") {
+        return [];
     }
     return fetch(`api/get_orario.php?orario=${orario}&giorno=${giorno}`)
         .then(response => response.json())
@@ -320,6 +323,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     //     console.log("Current lessons object not found in localStorage");
     //     console.log(giornoPull);
     //     console.log(orePull);
+
     await getAndElaborateLessons(giornoPull, orePull);
     await sleep(delayBetween * 3);
     if (!showingSettings) {
@@ -392,10 +396,10 @@ function findIntervalIndex(timeStr, intervals) {
 
 function getRelativeInterval(timeStr, intervals, offset = 0) {
     const index = findIntervalIndex(timeStr, intervals);
-    if (index === -1) return null; // Not in any interval
+    if (index === -1) return "out"; // Not in any interval
 
     const targetIndex = index + offset;
-    if (targetIndex < 0 || targetIndex >= intervals.length) return null;
+    if (targetIndex < 0 || targetIndex >= intervals.length) return "out";
 
     return intervals[targetIndex].start;
 }
@@ -404,7 +408,11 @@ function getRelativeInterval(timeStr, intervals, offset = 0) {
 async function getAndElaborateLessons(giornoPull, orePull) {
     try {
         const currentLessons = await getOrarioGiorno(giornoPull, orePull);
+        // If this is the last interval then the next one is just empty cells which will display "Assente"
         const nextLessons = await getOrarioGiorno(giornoPull, getRelativeInterval(orePull, intervals, 1));
+        if (nextLessons == null) {
+            console.log("No next lessons found, filling with empty cells.");
+        }
 
         // Clear previous cells and reset state
         offset = 0;

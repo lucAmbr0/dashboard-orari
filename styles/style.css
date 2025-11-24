@@ -252,3 +252,9 @@ body {
     margin-top: 10px;
 }
 
+input[type="text"],
+input[type="password"],
+input[type="number"] {
+    border-radius: 5px;
+    border: solid 1px var(--black-txt-1);
+}

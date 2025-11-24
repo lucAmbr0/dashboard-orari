@@ -11,7 +11,6 @@ USE orario_scuola;
 
 CREATE TABLE IF NOT EXISTS orario (
     NUMERO INT PRIMARY KEY AUTO_INCREMENT,
-    DURATA VARCHAR(10) NOT NULL, 
     CLASSE VARCHAR(10) NOT NULL,
     AULA VARCHAR(50) NOT NULL,
     GIORNO ENUM('lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì') NOT NULL,

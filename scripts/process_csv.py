@@ -1,10 +1,18 @@
-#!/usr/bin/env python3
 """
+######## DEPRECATED ########
+Logic to process csv file and upload
+to the db is now in api/upload_csv.php
+24-11-2025
+
+
 Script to process EXP_COURS.csv:
 1. Removes the columns MAT_NOME, DOC_COGN, DOC_NOME
 2. Converts durations from 2h00 to two separate rows of 1h00 with consecutive times
 3. Saves the result in the root folder of the project.
+
+############################
 """
+
 
 import csv
 import os
