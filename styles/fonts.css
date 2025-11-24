@@ -4,6 +4,7 @@
   font-weight: 100 900;
   font-display: swap;
   src: local('Noto Sans'),
+       url("../fonts/Noto_Sans/NotoSans-VariableFont_wdth,wght.woff2") format("woff2"),
        url("../fonts/Noto_Sans/NotoSans-VariableFont_wdth,wght.ttf") format("truetype");
 }
 
@@ -13,5 +14,6 @@
   font-weight: 100 900;
   font-display: swap;
   src: local('Material Symbols Outlined'),
+       url("../fonts/Material_Symbols_Outlined/MaterialSymbolsOutlined-VariableFont_FILL,GRAD,opsz,wght.woff2") format("woff2"),
        url("../fonts/Material_Symbols_Outlined/MaterialSymbolsOutlined-VariableFont_FILL,GRAD,opsz,wght.ttf") format("truetype");
 }

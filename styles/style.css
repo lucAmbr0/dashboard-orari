@@ -163,7 +163,7 @@ body {
 } 
 
 .trigger-scrollUp {
-    animation: scrollUp linear forwards;
+    animation: scrollUp ease forwards;
 }
 
 #toggleSettingsBtn {
@@ -210,6 +210,7 @@ body {
     display: flex;
     flex-direction: column;
     z-index: 3;
+    animation: appearUp 0.3s ease forwards;
     h2 {
         text-align: center;
         font-size: 32px;
