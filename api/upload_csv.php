@@ -7,8 +7,8 @@ header('Content-Type: application/json; charset=utf-8');
 try {
     $pdo = getDbConnection(); // Database connection
     
-    // Hashed token using password_hash("1234567890", PASSWORD_DEFAULT) - bcrypt algorithm
-    $secretTokenHash = '$2y$12$fB9439NlYjcaGR65n5HoQugsLw.ItevAm4exliEqWd2MQxIAFpGvK';
+    // Hashed token using hash('sha256', '1234567890')
+    $secretTokenHash = 'c775e7b757ede630cd0aa1113bd102661ab38829ca52a6422ab782862f268646';
 
     // Accept uploaded file from HTML form field `file` (multipart/form-data)
     if (!isset($_FILES['file']) || !is_uploaded_file($_FILES['file']['tmp_name'])) {
@@ -20,7 +20,7 @@ try {
 
     // Token validation: compare POST field 'token' with hashed hardcoded token
     $token = isset($_POST['token']) ? $_POST['token'] : null;
-    if (!$token || !password_verify($token, $secretTokenHash)) {
+    if (!$token || !hash_equals($secretTokenHash, hash('sha256', $token))) {
         http_response_code(403);
         echo json_encode(["success" => false, "error" => "Invalid token"]);
         exit;
