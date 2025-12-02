@@ -1,9 +1,9 @@
 <?php
 // Database configuration, remember to run orario_scuola.sql to create the database.
-define('DB_HOST', 'localhost');
-define('DB_USERNAME', 'utente');
-define('DB_PASSWORD', 'utente');
-define('DB_NAME', 'orario_scuola');
+define('DB_HOST', 'localhost'); // default: localhost
+define('DB_USERNAME', 'utente'); // default: utente
+define('DB_PASSWORD', 'utente'); // default: utente
+define('DB_NAME', 'orario_scuola'); // default: orario_scuola
 
 // Function for database connection
 function getDbConnection() {

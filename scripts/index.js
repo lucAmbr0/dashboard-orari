@@ -88,6 +88,8 @@ let delayBetween = 5000;
 let animationCurve = "ease";
 let orePull = "";
 let giornoPull = "";
+let currentIntervalStart = "";
+let intervalCheckTimer = null;
 let intervals = [
     { start: "08h00", end: "08h55" },
     { start: "08h55", end: "10h00" },
@@ -259,6 +261,11 @@ async function startScrolling() {
             if (old) old.removeFromUI();
         }
 
+        // Infinite scroll: wrap around to the beginning
+        if (offset >= cells.length) {
+            offset = 0;
+        }
+
         const nextCells = cells.slice(offset, offset + stepSize);
         nextCells.forEach(c => {
             c.appendToUI();
@@ -272,11 +279,9 @@ async function startScrolling() {
         container.style.transition = "";
         container.classList.remove("trigger-scrollUp");
 
-        if (offset < cells.length) {
-            await sleep(scrollDuration + delayBetween);
-            await scrollStep();
-        }
-
+        // Continue scrolling
+        await sleep(scrollDuration + delayBetween);
+        await scrollStep();
     }
 
     await scrollStep();
@@ -318,6 +323,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const date = new Date();
         orePull = getRelativeInterval(formatTime(date), intervals, 0);
         giornoPull = formatDay(date);
+        currentIntervalStart = orePull; // Store the current interval
+        startIntervalCheck(); // Start checking for interval changes
     }
     // if (!localStorage.getItem(`lessons-${giornoPull}-${orePull}`)) {
     //     console.log("Current lessons object not found in localStorage");
@@ -325,10 +332,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     //     console.log(orePull);
 
     await getAndElaborateLessons(giornoPull, orePull);
-    await sleep(delayBetween * 3);
-    if (!showingSettings) {
-        window.location.reload();
-    }
+    // Removed the automatic reload - scrolling is now infinite
     // } else {
     //     if (localStorage.getItem(`lessons-${giornoPull}-${getRelativeInterval(orePull, intervals, -1)}`)) {
     //         // Removing old lessons to optimize localStorage
@@ -402,6 +406,23 @@ function getRelativeInterval(timeStr, intervals, offset = 0) {
     if (targetIndex < 0 || targetIndex >= intervals.length) return "out";
 
     return intervals[targetIndex].start;
+}
+
+function startIntervalCheck() {
+    // Only start interval checking if using current day and time
+    if (!useCurrentDayAndTime) return;
+
+    // Check every 30 seconds if new interval has started
+    intervalCheckTimer = setInterval(() => {
+        const date = new Date();
+        const currentTime = formatTime(date);
+        const newInterval = getRelativeInterval(currentTime, intervals, 0);
+
+        if (newInterval !== currentIntervalStart && newInterval !== "out") {
+            console.log(`Interval changed from ${currentIntervalStart} to ${newInterval}. Reloading...`);
+            window.location.reload();
+        }
+    }, 30000); // Check every 30 seconds
 }
 
 
