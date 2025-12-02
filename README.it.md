@@ -60,13 +60,20 @@ Il layer di presentazione è interamente in italiano. Include:
 - PHP runtime con estensioni MySQL.
 - Database MySQL chiamato `orario_scuola` (configurabile) raggiungibile dagli script PHP.
 - Browser collegato allo stesso host per `index.html`/`admin.html`.
+- Un file CSV contenente gli orari esportato dal <a href="https://www.index-education.com/it/software-programma-orario.php">software "EDT" (di Index Education)</a>
 
 ### Configurazione iniziale
 1. Importa `scripts/orario_scuola.sql` in MySQL.
 2. Aggiorna `DB_HOST`, `DB_USERNAME`, `DB_PASSWORD` e `DB_NAME` dentro `api/config.php`.
 3. Pubblica la repository tramite il tuo web server (ad esempio sotto `/srv/http/dashboard-orari`).
 
-### Aggiornare l'orario
+### Importare l'orario
+- Questa app fornisce un pannello di amministrazione visivo in `dashboard-orari/admin.html` che accetta un token segreto e un file csv.
+- Il backend in PHP accetta un file .csv nel formato previsto dal software di gestione scolastica "EDT" di Index Education.
+Per poter importare l'orario in `admin.html` in modo da poterlo utilizzare in questa webapp è quindi necessario che la scuola impieghi questo software.
+Per le scuole che lo utilizzano, semplicemente esportate la raccolta degli orari in formato .csv avendo cura di mantenere le seguenti colonne: NUMERO; DURATA; MAT_NOME; CLASSE; AULA; GIORNO; O.INIZIO
+
+
 ```bash
 curl -F "token=1234567890" -F "file=@scripts/EXP_COURS.csv;type=text/csv" \
   http://localhost/dashboard-orari/api/upload_csv.php

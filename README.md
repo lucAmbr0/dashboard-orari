@@ -60,13 +60,22 @@ The presentation layer is entirely in Italian. This includes:
 - PHP runtime with MySQL extensions.
 - MySQL database named `orario_scuola` (configurable) reachable from the PHP scripts.
 - Browser connected to the same host for `index.html`/`admin.html`.
+- A .csv file of the timetables from <a href="https://www.index-education.com/it/software-programma-orario.php">"EDT" software (by Index Education)</a>
 
 ### Initial setup
 1. Import `scripts/orario_scuola.sql` into MySQL.
 2. Adjust `DB_HOST`, `DB_USERNAME`, `DB_PASSWORD`, and `DB_NAME` inside `api/config.php`.
 3. Serve the repository through your web server (e.g., place it under `/srv/http/dashboard-orari`).
 
-### Updating the timetable
+### Importing the timetable
+- This app provides a visual admin panel at `dashboard-orari/admin.html` that accepts a secret token and a csv file.
+- The PHP backend accepts a .csv file in the format supported by Index Education's "EDT" school management software.
+To import the timetable into `admin.html` for use in this web app, the school must use this software.
+For schools that use it, simply export the timetable collection in .csv format, making sure to retain the following columns: NUMERO; DURATA; MAT_NOME; CLASSE; AULA; GIORNO; O.INIZIO
+
+<br>
+
+- Alternatively, you can load the file directly from the command line using the `curl` command and passing the token and csv file as follows:
 ```bash
 curl -F "token=1234567890" -F "file=@scripts/EXP_COURS.csv;type=text/csv" \
   http://localhost/dashboard-orari/api/upload_csv.php
