@@ -28,15 +28,19 @@ body {
 .bg-class-1 {
     background-color: var(--primary-bg-prime);
 }
+
 .bg-class-2 {
     background-color: var(--primary-bg-seconde);
 }
+
 .bg-class-3 {
     background-color: var(--primary-bg-terze);
 }
+
 .bg-class-4 {
     background-color: var(--primary-bg-quarte);
 }
+
 .bg-class-5 {
     background-color: var(--primary-bg-quinte);
 }
@@ -44,11 +48,10 @@ body {
 .material-symbols-outlined {
     font-family: 'Material Symbols Outlined';
     font-variation-settings:
-    'FILL' 0,
-    'wght' 400,
-    'GRAD' 0,
-    'opsz' 24
-    ;
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24;
     font-feature-settings: 'liga' 1;
     font-variant-ligatures: contextual;
     line-height: 1;
@@ -65,7 +68,7 @@ body {
     width: 100%;
     height: 100%;
     border-radius: 30px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
 }
 
 .className {
@@ -138,6 +141,7 @@ body {
     from {
         transform: translateY(0);
     }
+
     to {
         transform: translateY(var(--scroll-distance, calc(-240px - 20px)));
     }
@@ -150,6 +154,7 @@ body {
         scale: 0.85;
         opacity: 0;
     }
+
     to {
         /* position: inherit; */
         transform: translateY(0);
@@ -160,7 +165,7 @@ body {
 
 .none {
     animation: none;
-} 
+}
 
 .trigger-scrollUp {
     animation: scrollUp ease forwards;
@@ -192,7 +197,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
     z-index: 2;
 }
@@ -205,7 +210,7 @@ body {
     height: fit-content;
     background-color: var(--gray-bg-1);
     border-radius: 30px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.15);
     padding: 20px;
     display: flex;
     flex-direction: column;
@@ -231,6 +236,7 @@ body {
     border: solid 2px var(--gray-bg-2);
     width: fit-content;
     font-weight: 600;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
     cursor: pointer;
     transition: 0.3s;
 }
@@ -258,4 +264,26 @@ input[type="password"],
 input[type="number"] {
     border-radius: 5px;
     border: solid 1px var(--black-txt-1);
+}
+
+
+footer {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background-color: white;
+    padding: 5px 10px;
+    border-radius: 10px;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+
+    a {
+        margin-left: 5px;
+        color: black;
+        text-decoration: none;
+    }
 }
