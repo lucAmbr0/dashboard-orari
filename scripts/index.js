@@ -263,15 +263,21 @@ async function startScrolling() {
 
         // Infinite scroll: wrap around to the beginning
         if (offset >= cells.length) {
-            offset = 0;
+            offset = offset % cells.length;
         }
 
-        const nextCells = cells.slice(offset, offset + stepSize);
+        // Collect exactly stepSize cells, wrapping around if necessary
+        const nextCells = [];
+        for (let i = 0; i < stepSize; i++) {
+            const cellIndex = (offset + i) % cells.length;
+            nextCells.push(cells[cellIndex]);
+        }
+        
         nextCells.forEach(c => {
             c.appendToUI();
             visibleCells.push(c);
         });
-        offset += nextCells.length;
+        offset = (offset + stepSize) % cells.length;
 
         container.style.transition = "none";
         container.style.transform = "translateY(0)";
