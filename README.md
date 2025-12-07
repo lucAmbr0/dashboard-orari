@@ -14,23 +14,15 @@ Dashboard Orari is a lightweight web dashboard that shows the current and next c
 
 ### Demo
 
-<div style="width: 100%;">
-  <img src="assets/demo-video.gif" alt="Demo" style="width: 100%; height: auto; display: block;">
-</div>
+![Demo](assets/demo-video.gif)
 
-<style>
-  .screenshot-1 { display: none; }
-  @media (min-width: 1000px) {
-    .screenshot-1 { display: block; }
-    .screenshot-grid { grid-template-columns: repeat(3, 1fr) !important; }
-  }
-</style>
-
-<div class="screenshot-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; margin-top: 10px;">
-  <img class="screenshot-1" src="assets/screenshot-1.png" alt="Screenshot 1" style="width: 100%; height: auto;">
-  <img src="assets/screenshot-2.png" alt="Screenshot 2" style="width: 100%; height: auto;">
-  <img src="assets/screenshot-3.png" alt="Screenshot 3" style="width: 100%; height: auto;">
-</div>
+<table>
+  <tr>
+    <td><img src="assets/screenshot-1.png" alt="Screenshot 1" width="100%"></td>
+    <td><img src="assets/screenshot-2.png" alt="Screenshot 2" width="100%"></td>
+    <td><img src="assets/screenshot-3.png" alt="Screenshot 3" width="100%"></td>
+  </tr>
+</table>
 
 ### Key features
 
