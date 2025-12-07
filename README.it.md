@@ -4,7 +4,7 @@
   <img src="assets/icon.png" alt="Logo" width="30" height="30">
   <h3 align="center">Dashboard Orari</h3>
   <p align="center">
-    <a href="README.md"><strong>Switch to English</strong></a>
+    <a href="README.md"><strong>Switch to English 🇺🇸</strong></a>
   </p>
 </div>
 
@@ -12,7 +12,28 @@
 
 Dashboard Orari è una web dashboard leggera che mostra l'aula corrente e quella successiva per ogni classe. I dati degli orari vivono nella tabella MySQL (`orario`) e vengono aggiornati tramite upload CSV gestito da una piccola API PHP.
 
+### Demo
+
+<div style="width: 100%;">
+  <img src="assets/demo-video.gif" alt="Demo" style="width: 100%; height: auto; display: block;">
+</div>
+
+<style>
+  .screenshot-1 { display: none; }
+  @media (min-width: 1000px) {
+    .screenshot-1 { display: block; }
+    .screenshot-grid { grid-template-columns: repeat(3, 1fr) !important; }
+  }
+</style>
+
+<div class="screenshot-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; margin-top: 10px;">
+  <img class="screenshot-1" src="assets/screenshot-1.png" alt="Screenshot 1" style="width: 100%; height: auto;">
+  <img src="assets/screenshot-2.png" alt="Screenshot 2" style="width: 100%; height: auto;">
+  <img src="assets/screenshot-3.png" alt="Screenshot 3" style="width: 100%; height: auto;">
+</div>
+
 ### Funzionalità principali
+
 - Wallboard auto-scrolling costruito con HTML/CSS/JS vanilla (`index.html`, `styles/`, `scripts/index.js`).
 - Settings overlay locale (solo italiano) che permette al personale di regolare intervalli di animazione, easing curve e selezione manuale di giorno/ora, persistiti in `localStorage`.
 - Admin upload form (`admin.html`) che invia CSV a `api/upload_csv.php`, normalizza le righe, divide le lezioni multi-hour e tronca/ripopola la tabella `orario` tramite PDO.
@@ -27,6 +48,7 @@ Il layer di presentazione è interamente in italiano. Include:
 - Admin panel in `admin.html`
 
 ## Tech stack
+
 - Static HTML templates (`index.html`, `admin.html`).
 - Vanilla JavaScript (`scripts/index.js`) per logica UI, icone Material Symbols e REST calls.
 - PHP 8 + PDO (`api/*.php`) per ingestion CSV e query sull'orario.
@@ -34,20 +56,22 @@ Il layer di presentazione è interamente in italiano. Include:
 - Optional Python helper (`scripts/process_csv.py`) che replica la routine di normalizzazione PHP. (deprecated!)
 
 ## Repository layout
-| Path | Purpose |
-| --- | --- |
-| `index.html` | TV/dashboard view che ruota le classi. |
-| `admin.html` | Modulo protetto per l'upload dei nuovi CSV. |
-| `api/config.php` | Helper PDO e credenziali DB. |
-| `api/upload_csv.php` | Accetta upload `multipart/form-data`, valida il token admin, ripulisce le righe e riscrive `orario`. |
-| `api/get_orario.php` | Restituisce JSON filtrato per `giorno` e `orario`. |
-| `scripts/index.js` | Front-end controller: carica le impostazioni, recupera le lezioni, anima le celle. |
-| `scripts/process_csv.py` | Processor CSV originale mantenuto per reference/testing. (deprecated) |
-| `scripts/orario_scuola.sql` | Definizione tabella MySQL (`NUMERO`, `CLASSE`, `AULA`, `GIORNO`, `O_INIZIO`). |
-| `styles/style.css` | CSS per gestire dashboard e admin UI. |
-| `assets/fonts/` | Font Material Symbols e Noto Sans con relative licenze. |
+
+| Path                        | Purpose                                                                                              |
+| --------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `index.html`                | TV/dashboard view che ruota le classi.                                                               |
+| `admin.html`                | Modulo protetto per l'upload dei nuovi CSV.                                                          |
+| `api/config.php`            | Helper PDO e credenziali DB.                                                                         |
+| `api/upload_csv.php`        | Accetta upload `multipart/form-data`, valida il token admin, ripulisce le righe e riscrive `orario`. |
+| `api/get_orario.php`        | Restituisce JSON filtrato per `giorno` e `orario`.                                                   |
+| `scripts/index.js`          | Front-end controller: carica le impostazioni, recupera le lezioni, anima le celle.                   |
+| `scripts/process_csv.py`    | Processor CSV originale mantenuto per reference/testing. (deprecated)                                |
+| `scripts/orario_scuola.sql` | Definizione tabella MySQL (`NUMERO`, `CLASSE`, `AULA`, `GIORNO`, `O_INIZIO`).                        |
+| `styles/style.css`          | CSS per gestire dashboard e admin UI.                                                                |
+| `assets/fonts/`             | Font Material Symbols e Noto Sans con relative licenze.                                              |
 
 ## Flusso dei dati
+
 1. **Database provisioning** – Importa `scripts/orario_scuola.sql` in MySQL e aggiorna le credenziali in `api/config.php`.
 2. **CSV upload** – Il personale esporta un CSV separato da punto e virgola (vedi `scripts/EXP_COURS.csv`) e lo invia da `admin.html` oppure via `curl` verso `api/upload_csv.php` insieme al token condiviso (default `1234567890`, hash lato server).
 3. **Normalization** – `upload_csv.php` pulisce gli accenti, impone ID sequenziali e divide le lezioni più lunghe di un'ora in righe multiple allineate all'array `SCHOOL_TIMES`.
@@ -56,6 +80,7 @@ Il layer di presentazione è interamente in italiano. Include:
 ## Utilizzo
 
 ### Requisiti
+
 - Web server.
 - PHP runtime con estensioni MySQL.
 - Database MySQL chiamato `orario_scuola` (configurabile) raggiungibile dagli script PHP.
@@ -63,30 +88,34 @@ Il layer di presentazione è interamente in italiano. Include:
 - Un file CSV contenente gli orari esportato dal <a href="https://www.index-education.com/it/software-programma-orario.php">software "EDT" (di Index Education)</a>
 
 ### Configurazione iniziale
+
 1. Importa `scripts/orario_scuola.sql` in MySQL.
 2. Aggiorna `DB_HOST`, `DB_USERNAME`, `DB_PASSWORD` e `DB_NAME` dentro `api/config.php`.
 3. Pubblica la repository tramite il tuo web server (ad esempio sotto `/srv/http/dashboard-orari`).
 
 ### Importare l'orario
+
 - Questa app fornisce un pannello di amministrazione visivo in `dashboard-orari/admin.html` che accetta un token segreto e un file csv.
 - Il backend in PHP accetta un file .csv nel formato previsto dal software di gestione scolastica "EDT" di Index Education.
-Per poter importare l'orario in `admin.html` in modo da poterlo utilizzare in questa webapp è quindi necessario che la scuola impieghi questo software.
-Per le scuole che lo utilizzano, semplicemente esportate la raccolta degli orari in formato .csv avendo cura di mantenere le seguenti colonne: NUMERO; DURATA; MAT_NOME; CLASSE; AULA; GIORNO; O.INIZIO
-
+  Per poter importare l'orario in `admin.html` in modo da poterlo utilizzare in questa webapp è quindi necessario che la scuola impieghi questo software.
+  Per le scuole che lo utilizzano, semplicemente esportate la raccolta degli orari in formato .csv avendo cura di mantenere le seguenti colonne: NUMERO; DURATA; MAT_NOME; CLASSE; AULA; GIORNO; O.INIZIO
 
 ```bash
 curl -F "token=1234567890" -F "file=@scripts/EXP_COURS.csv;type=text/csv" \
   http://localhost/dashboard-orari/api/upload_csv.php
 ```
+
 L'endpoint risponde con JSON che indica quante righe sono state processate e inserite. Se va a buon fine la tabella `orario` viene sostituita completamente.
 
 ### Visualizzare la dashboard
+
 1. Apri `index.html` sul monitor.
 2. Usa il pulsante nascosto in basso a sinistra per regolare intervallo/animazione. L'interfaccia resta solo in italiano.
 
 ## Riferimento API
 
 ### `GET api/get_orario.php`
+
 - **Query parameters**
   - `orario` – Ora di inizio in formato `HHhMM` (es. `08h55`).
   - `giorno` – Giorno feriale italiano in minuscolo (`lunedì`..`venerdì`).
@@ -98,12 +127,19 @@ L'endpoint risponde con JSON che indica quante righe sono state processate e ins
     "requested_day": "lunedì",
     "count": 12,
     "classi": [
-      {"NUMERO": 1, "CLASSE": "1A", "AULA": "Lab. Info", "GIORNO": "lunedì", "O_INIZIO": "08h55"}
+      {
+        "NUMERO": 1,
+        "CLASSE": "1A",
+        "AULA": "Lab. Info",
+        "GIORNO": "lunedì",
+        "O_INIZIO": "08h55"
+      }
     ]
   }
   ```
 
 ### `POST api/upload_csv.php`
+
 - **Form fields**
   - `token` – Segreto condiviso in chiaro (default `1234567890`).
   - `file` – CSV (delimitatore `;`, intestazioni come `NUMERO`, `CLASSE`, `AULA`, `GIORNO`, `O_INIZIO`, `DURATA`).
@@ -114,10 +150,12 @@ L'endpoint risponde con JSON che indica quante righe sono state processate e ins
 - Progetto open-source creato da <a href="https://github.com/lucAmbr0">lucAmbr0</a> e <a href="https://github.com/gettyreal">gettyreal</a> per l'IIS Leonardo Da Vinci di Carate Brianza
 
 ## Licenze e crediti
+
 - Le licenze dei font si trovano accanto a ogni famiglia dentro `assets/fonts/**/LICENSE.txt` o `OFL.txt`.
 - Il codice non ha licenza: adattalo come necessario nel tuo ambiente.
 
 ## Problemi
+
 - Apri una issue su questa repository per bug o richieste di funzionalità.
 
 <p align="right">(<a href="#readme-top">torna su</a>)</p>
